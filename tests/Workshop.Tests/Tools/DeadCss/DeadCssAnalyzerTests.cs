@@ -28,8 +28,10 @@ public class DeadCssAnalyzerTests
             await File.WriteAllTextAsync(Path.Combine(root.FullName, "Page.razor.css"), ".scoped-unused { }", ct);
             await File.WriteAllTextAsync(Path.Combine(root.FullName, "Page.razor"), """<div class="used"></div>""", ct);
 
-            var results = await DeadCssAnalyzer.AnalyzeAsync(root.FullName, ct);
+            var progress = new List<(int Done, int Total)>();
+            var results = await DeadCssAnalyzer.AnalyzeAsync(root.FullName, (done, total) => progress.Add((done, total)), ct);
 
+            Assert.Equal(new[] { (1, 2), (2, 2) }, progress);
             var file = Assert.Single(results);
             Assert.Equal("site.css", file.RelativePath);
             Assert.Equal(1, file.AliveCount);

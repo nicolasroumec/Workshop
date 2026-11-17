@@ -7,10 +7,29 @@ internal class DeadCssTool(IAnsiConsole console) : ITool
 {
     public string Name => "CSS muerto";
 
+    public string Icon => "🧹";
+
+    public string Description => "Clases de los CSS globales que nadie usa";
+
     public async Task RunAsync(Project project, CancellationToken cancellationToken)
     {
-        var results = await console.Status()
-            .StartAsync("Analizando...", _ => DeadCssAnalyzer.AnalyzeAsync(project.Path, cancellationToken));
+        var results = await console.Progress()
+            .Columns(
+                new TaskDescriptionColumn(),
+                new ProgressBarColumn { CompletedStyle = Style.Parse(Theme.Accent) },
+                new PercentageColumn())
+            .StartAsync(context =>
+            {
+                var task = context.AddTask("Leyendo archivos");
+                return DeadCssAnalyzer.AnalyzeAsync(project.Path, (done, total) =>
+                {
+                    task.MaxValue = total;
+                    task.Value = done;
+                    task.Description = $"Leyendo archivos {done}/{total}";
+                }, cancellationToken);
+            });
+
+        console.WriteLine();
 
         if (results.Count == 0)
         {
@@ -18,39 +37,58 @@ internal class DeadCssTool(IAnsiConsole console) : ITool
             return;
         }
 
-        foreach (var file in results.Where(r => r.DeadClasses.Count > 0 || r.DynamicClasses.Count > 0))
-        {
-            ShowDetail(file);
-        }
-
-        ShowSummary(results);
+        ShowTree(project, results);
+        ShowSummary(project, results);
     }
 
-    private void ShowDetail(CssFileResult file)
+    private void ShowTree(Project project, IReadOnlyList<CssFileResult> results)
     {
-        console.MarkupLine($"[bold]{Markup.Escape(file.RelativePath)}[/]");
-
-        foreach (var cssClass in file.DeadClasses)
+        var withIssues = results.Where(r => r.DeadClasses.Count > 0 || r.DynamicClasses.Count > 0).ToList();
+        if (withIssues.Count == 0)
         {
-            console.MarkupLine($"    [{Theme.Danger}]muerta [/]  .{Markup.Escape(cssClass)}");
+            console.MarkupLine($"[{Theme.Success}]No hay clases muertas.[/]");
+            console.WriteLine();
+            return;
         }
 
-        foreach (var dynamic in file.DynamicClasses)
+        var tree = new Tree($"[bold]{Markup.Escape(project.Name)}[/]");
+
+        foreach (var folder in withIssues.GroupBy(r => Path.GetDirectoryName(r.RelativePath) ?? ""))
         {
-            console.MarkupLine($"    [{Theme.Warning}]revisar[/]  .{Markup.Escape(dynamic.Name)}  [{Theme.Muted}](prefijo {Markup.Escape(dynamic.Prefix)})[/]");
+            IHasTreeNodes parent = folder.Key.Length == 0
+                ? tree
+                : tree.AddNode($"📁 [bold]{Markup.Escape(folder.Key)}[/]");
+
+            foreach (var file in folder)
+            {
+                var fileNode = parent.AddNode(
+                    $"{Theme.FileLink(Path.Combine(project.Path, file.RelativePath), Path.GetFileName(file.RelativePath))}  " +
+                    $"[{Theme.Muted}]{file.DeadClasses.Count} muertas · {file.DynamicClasses.Count} a revisar[/]");
+
+                foreach (var cssClass in file.DeadClasses)
+                {
+                    fileNode.AddNode($"[{Theme.Danger}]muerta [/]  .{Markup.Escape(cssClass)}");
+                }
+
+                foreach (var dynamic in file.DynamicClasses)
+                {
+                    fileNode.AddNode($"[{Theme.Warning}]revisar[/]  .{Markup.Escape(dynamic.Name)}  [{Theme.Muted}](prefijo {Markup.Escape(dynamic.Prefix)})[/]");
+                }
+            }
         }
 
+        console.Write(tree);
         console.WriteLine();
     }
 
-    private void ShowSummary(IReadOnlyList<CssFileResult> results)
+    private void ShowSummary(Project project, IReadOnlyList<CssFileResult> results)
     {
         var table = new Table().AddColumns("Archivo", "Vivas", "Muertas", "Dinámicas");
 
         foreach (var file in results)
         {
             table.AddRow(
-                Markup.Escape(file.RelativePath),
+                Theme.FileLink(Path.Combine(project.Path, file.RelativePath), file.RelativePath),
                 file.AliveCount.ToString(),
                 Highlight(file.DeadClasses.Count, Theme.Danger),
                 Highlight(file.DynamicClasses.Count, Theme.Warning));

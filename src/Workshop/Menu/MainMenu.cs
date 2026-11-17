@@ -10,6 +10,15 @@ internal class MainMenu
     private const string ChangeProjectOption = "Cambiar proyecto";
     private const string AddProjectOption = "Agregar proyecto";
     private const string ExitOption = "Salir";
+    private const string ToolsGroup = "Herramientas";
+    private const string ProjectGroup = "Proyecto";
+
+    private static readonly Dictionary<string, string> OptionIcons = new()
+    {
+        [ChangeProjectOption] = "🔁",
+        [AddProjectOption] = "➕",
+        [ExitOption] = "🚪",
+    };
 
     private static readonly string Version =
         typeof(MainMenu).Assembly
@@ -98,27 +107,48 @@ internal class MainMenu
 
     private string AskOption()
     {
-        var options = new List<string>();
+        var prompt = new SelectionPrompt<string>()
+            .Title("¿Qué hacemos?")
+            .Mode(SelectionMode.Leaf)
+            .HighlightStyle(Style.Parse(Theme.Accent))
+            .PageSize(15)
+            .UseConverter(FormatOption);
+
         if (_current is not null)
         {
-            options.AddRange(_tools.Select(t => t.Name));
+            prompt.AddChoiceGroup(ToolsGroup, _tools.Select(t => t.Name));
         }
+
+        var projectOptions = new List<string>();
         if (_projects.Count > 1)
         {
-            options.Add(ChangeProjectOption);
+            projectOptions.Add(ChangeProjectOption);
         }
-        options.AddRange([AddProjectOption, ExitOption]);
+        projectOptions.Add(AddProjectOption);
 
-        return _console.Prompt(new SelectionPrompt<string>()
-            .Title("¿Qué hacemos?")
-            .UseConverter(Markup.Escape)
-            .AddChoices(options));
+        prompt.AddChoiceGroup(ProjectGroup, projectOptions);
+        prompt.AddChoices(ExitOption);
+
+        return _console.Prompt(prompt);
+    }
+
+    private string FormatOption(string option)
+    {
+        var tool = _tools.FirstOrDefault(t => t.Name == option);
+        if (tool is not null)
+        {
+            return $"{tool.Icon} {Markup.Escape(tool.Name)}  [{Theme.Muted}]{Markup.Escape(tool.Description)}[/]";
+        }
+
+        return OptionIcons.TryGetValue(option, out var icon)
+            ? $"{icon} {Markup.Escape(option)}"
+            : $"[bold]{Markup.Escape(option)}[/]";
     }
 
     private async Task RunToolAsync(ITool tool, Project project)
     {
         _console.Clear();
-        _console.Write(new Rule($"[bold]{Markup.Escape(tool.Name)}[/] [{Theme.Muted}]· {Markup.Escape(project.Name)}[/]").LeftJustified());
+        _console.Write(new Rule($"{tool.Icon} [bold]{Markup.Escape(tool.Name)}[/] [{Theme.Muted}]· {Markup.Escape(project.Name)}[/]").LeftJustified());
         _console.WriteLine();
 
         using var cancellation = new CancellationTokenSource();
