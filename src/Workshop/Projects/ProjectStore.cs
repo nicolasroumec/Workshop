@@ -2,34 +2,34 @@
 
 namespace Workshop.Projects;
 
-internal static class ProjectStore
+internal class ProjectStore(string dataFolder)
 {
-    internal static string DataFolder { get; } =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Workshop");
-
-    private static readonly string FilePath = Path.Combine(DataFolder, "projects.json");
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
-    internal static List<Project> Load()
+    private readonly string _filePath = Path.Combine(dataFolder, "projects.json");
+
+    public string DataFolder { get; } = dataFolder;
+
+    public List<Project> Load()
     {
-        if (!File.Exists(FilePath))
+        if (!File.Exists(_filePath))
         {
             return [];
         }
 
-        var json = File.ReadAllText(FilePath);
-        return JsonSerializer.Deserialize<List<Project>>(json) ?? [];
+        var json = File.ReadAllText(_filePath);
+        return JsonSerializer.Deserialize<List<Project>>(json, JsonOptions) ?? [];
     }
 
-    internal static void Save(List<Project> projects)
+    public void Save(List<Project> projects)
     {
         Directory.CreateDirectory(DataFolder);
 
         var json = JsonSerializer.Serialize(projects, JsonOptions);
-        File.WriteAllText(FilePath, json);
+        File.WriteAllText(_filePath, json);
     }
 
-    internal static void MarkAsLast(List<Project> projects, Project project)
+    public void MarkAsLast(List<Project> projects, Project project)
     {
         projects.Remove(project);
         projects.Insert(0, project);
