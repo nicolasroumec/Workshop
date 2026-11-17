@@ -60,12 +60,40 @@ internal class MainMenu
 
     private void ShowHeader()
     {
+        Console.Title = _current is null ? "Workshop" : $"Workshop · {_current.Name}";
+
         _console.Clear();
-        _console.Write(new Rule($"[bold]Workshop[/] [{Theme.Muted}]v{Version}[/]").LeftJustified());
-        _console.MarkupLine(_current is null
-            ? $"[{Theme.Warning}]Sin proyecto. Agregá uno para empezar.[/]"
-            : $"Proyecto: [bold]{Markup.Escape(_current.Name)}[/]  [{Theme.Muted}]{Markup.Escape(_current.Path)}[/]");
+        _console.Write(new FigletText("Workshop") { Color = Style.Parse(Theme.Accent).Foreground });
+        _console.MarkupLine($"[{Theme.Muted}]v{Version}[/]");
         _console.WriteLine();
+
+        var content = _current is null
+            ? $"[{Theme.Warning}]Sin proyecto. Agregá uno para empezar.[/]"
+            : $"[bold]{Markup.Escape(_current.Name)}[/]\n[{Theme.Muted}]{Markup.Escape(_current.Path)}[/]{FormatGit(GitInfo.Read(_current.Path))}";
+
+        _console.Write(new Panel(new Markup(content))
+            .Header($"[{Theme.Accent}] Proyecto [/]")
+            .BorderStyle(Style.Parse(Theme.Accent))
+            .RoundedBorder()
+            .Expand());
+        _console.WriteLine();
+    }
+
+    private static string FormatGit(GitInfo? git)
+    {
+        if (git is null)
+        {
+            return "";
+        }
+
+        var line = $"\n[{Theme.Accent}]rama {Markup.Escape(git.Branch)}[/]";
+        return git.Ahead switch
+        {
+            null => $"{line}  [{Theme.Muted}]sin remoto[/]",
+            0 => line,
+            1 => $"{line}  [{Theme.Warning}]1 commit sin subir[/]",
+            var ahead => $"{line}  [{Theme.Warning}]{ahead} commits sin subir[/]",
+        };
     }
 
     private string AskOption()
