@@ -14,7 +14,7 @@ internal class DeadCssTool(IAnsiConsole console) : ITool
 
         if (results.Count == 0)
         {
-            console.MarkupLine("[yellow]No se encontraron archivos CSS globales.[/]");
+            console.MarkupLine($"[{Theme.Warning}]No se encontraron archivos CSS globales.[/]");
             return;
         }
 
@@ -32,12 +32,12 @@ internal class DeadCssTool(IAnsiConsole console) : ITool
 
         foreach (var cssClass in file.DeadClasses)
         {
-            console.MarkupLine($"    [red]muerta [/]  .{Markup.Escape(cssClass)}");
+            console.MarkupLine($"    [{Theme.Danger}]muerta [/]  .{Markup.Escape(cssClass)}");
         }
 
         foreach (var dynamic in file.DynamicClasses)
         {
-            console.MarkupLine($"    [yellow]revisar[/]  .{Markup.Escape(dynamic.Name)}  [grey](prefijo {Markup.Escape(dynamic.Prefix)})[/]");
+            console.MarkupLine($"    [{Theme.Warning}]revisar[/]  .{Markup.Escape(dynamic.Name)}  [{Theme.Muted}](prefijo {Markup.Escape(dynamic.Prefix)})[/]");
         }
 
         console.WriteLine();
@@ -52,15 +52,15 @@ internal class DeadCssTool(IAnsiConsole console) : ITool
             table.AddRow(
                 Markup.Escape(file.RelativePath),
                 file.AliveCount.ToString(),
-                Highlight(file.DeadClasses.Count, "red"),
-                Highlight(file.DynamicClasses.Count, "yellow"));
+                Highlight(file.DeadClasses.Count, Theme.Danger),
+                Highlight(file.DynamicClasses.Count, Theme.Warning));
         }
 
         table.AddRow(
             "[bold]TOTAL[/]",
             $"[bold]{results.Sum(r => r.AliveCount)}[/]",
-            $"[bold]{Highlight(results.Sum(r => r.DeadClasses.Count), "red")}[/]",
-            $"[bold]{Highlight(results.Sum(r => r.DynamicClasses.Count), "yellow")}[/]");
+            $"[bold]{Highlight(results.Sum(r => r.DeadClasses.Count), Theme.Danger)}[/]",
+            $"[bold]{Highlight(results.Sum(r => r.DynamicClasses.Count), Theme.Warning)}[/]");
 
         console.Write(table);
     }

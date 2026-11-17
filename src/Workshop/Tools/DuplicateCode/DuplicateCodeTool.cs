@@ -30,7 +30,7 @@ internal class DuplicateCodeTool(IAnsiConsole console, ProjectStore store) : ITo
         var reportPath = Path.Combine(outputFolder, "jscpd-report.json");
         if (result.ExitCode != 0 || !File.Exists(reportPath))
         {
-            console.MarkupLine("[red]jscpd no generó el reporte.[/] ¿Está instalado Node.js?");
+            console.MarkupLine($"[{Theme.Danger}]jscpd no generó el reporte.[/] ¿Está instalado Node.js?");
             console.WriteLine(string.IsNullOrWhiteSpace(result.Error) ? result.Output : result.Error);
             return;
         }
@@ -56,7 +56,7 @@ internal class DuplicateCodeTool(IAnsiConsole console, ProjectStore store) : ITo
     {
         if (duplicates.Count == 0)
         {
-            console.MarkupLine("[green]No hay código duplicado.[/]");
+            console.MarkupLine($"[{Theme.Success}]No hay código duplicado.[/]");
             return;
         }
 
@@ -86,7 +86,7 @@ internal class DuplicateCodeTool(IAnsiConsole console, ProjectStore store) : ITo
     }
 
     private static string FormatLocation(JscpdReport.Location location) =>
-        $"{Markup.Escape(location.Name)} [grey]{location.Start}-{location.End}[/]";
+        $"{Markup.Escape(location.Name)} [{Theme.Muted}]{location.Start}-{location.End}[/]";
 
     private static string SafeFolderName(string name) =>
         string.Join('_', name.Split(Path.GetInvalidFileNameChars()));

@@ -61,10 +61,10 @@ internal class MainMenu
     private void ShowHeader()
     {
         _console.Clear();
-        _console.Write(new Rule($"[bold]Workshop[/] [grey]v{Version}[/]").LeftJustified());
+        _console.Write(new Rule($"[bold]Workshop[/] [{Theme.Muted}]v{Version}[/]").LeftJustified());
         _console.MarkupLine(_current is null
-            ? "[yellow]Sin proyecto. Agregá uno para empezar.[/]"
-            : $"Proyecto: [bold]{Markup.Escape(_current.Name)}[/]  [grey]{Markup.Escape(_current.Path)}[/]");
+            ? $"[{Theme.Warning}]Sin proyecto. Agregá uno para empezar.[/]"
+            : $"Proyecto: [bold]{Markup.Escape(_current.Name)}[/]  [{Theme.Muted}]{Markup.Escape(_current.Path)}[/]");
         _console.WriteLine();
     }
 
@@ -90,7 +90,7 @@ internal class MainMenu
     private async Task RunToolAsync(ITool tool, Project project)
     {
         _console.Clear();
-        _console.Write(new Rule($"[bold]{Markup.Escape(tool.Name)}[/] [grey]· {Markup.Escape(project.Name)}[/]").LeftJustified());
+        _console.Write(new Rule($"[bold]{Markup.Escape(tool.Name)}[/] [{Theme.Muted}]· {Markup.Escape(project.Name)}[/]").LeftJustified());
         _console.WriteLine();
 
         using var cancellation = new CancellationTokenSource();
@@ -107,7 +107,7 @@ internal class MainMenu
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
-            _console.MarkupLine("[yellow]Cancelado.[/]");
+            _console.MarkupLine($"[{Theme.Warning}]Cancelado.[/]");
         }
         catch (Exception ex)
         {
@@ -119,14 +119,14 @@ internal class MainMenu
         }
 
         _console.WriteLine();
-        _console.Prompt(new TextPrompt<string>("[grey]Enter para volver al menú[/]").AllowEmpty());
+        _console.Prompt(new TextPrompt<string>($"[{Theme.Muted}]Enter para volver al menú[/]").AllowEmpty());
     }
 
     private void ChangeProject()
     {
         var selected = _console.Prompt(new SelectionPrompt<Project>()
             .Title("¿Qué proyecto?")
-            .UseConverter(p => $"{Markup.Escape(p.Name)}  [grey]{Markup.Escape(p.Path)}[/]")
+            .UseConverter(p => $"{Markup.Escape(p.Name)}  [{Theme.Muted}]{Markup.Escape(p.Path)}[/]")
             .AddChoices(_projects));
 
         SetCurrent(selected);
@@ -134,7 +134,7 @@ internal class MainMenu
 
     private void AddProject()
     {
-        var path = _console.Prompt(new TextPrompt<string>("Ruta de la carpeta [grey](vacío para volver)[/]:")
+        var path = _console.Prompt(new TextPrompt<string>($"Ruta de la carpeta [{Theme.Muted}](vacío para volver)[/]:")
             .AllowEmpty()
             .Validate(p => p.Length == 0 || Directory.Exists(p.Trim('"')), "Esa carpeta no existe."))
             .Trim().Trim('"');
