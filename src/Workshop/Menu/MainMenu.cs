@@ -1,5 +1,6 @@
 using Spectre.Console;
 using Workshop.Projects;
+using Workshop.Tools;
 
 namespace Workshop.Menu;
 
@@ -11,18 +12,20 @@ internal class MainMenu
 
     private readonly IAnsiConsole _console;
     private readonly ProjectStore _store;
+    private readonly List<ITool> _tools;
     private readonly List<Project> _projects;
     private Project? _current;
 
-    public MainMenu(IAnsiConsole console, ProjectStore store)
+    public MainMenu(IAnsiConsole console, ProjectStore store, IEnumerable<ITool> tools)
     {
         _console = console;
         _store = store;
+        _tools = tools.OrderBy(t => t.Name).ToList();
         _projects = store.Load();
         _current = _projects.FirstOrDefault();
     }
 
-    public void Run()
+    public async Task RunAsync()
     {
         while (true)
         {
@@ -40,6 +43,10 @@ internal class MainMenu
 
                 case ExitOption:
                     return;
+
+                case var toolName when _current is not null:
+                    await RunToolAsync(_tools.First(t => t.Name == toolName), _current);
+                    break;
             }
         }
     }
@@ -57,6 +64,10 @@ internal class MainMenu
     private string AskOption()
     {
         var options = new List<string>();
+        if (_current is not null)
+        {
+            options.AddRange(_tools.Select(t => t.Name));
+        }
         if (_projects.Count > 1)
         {
             options.Add(ChangeProjectOption);
@@ -65,7 +76,43 @@ internal class MainMenu
 
         return _console.Prompt(new SelectionPrompt<string>()
             .Title("¿Qué hacemos?")
+            .UseConverter(Markup.Escape)
             .AddChoices(options));
+    }
+
+    private async Task RunToolAsync(ITool tool, Project project)
+    {
+        _console.Clear();
+        _console.Write(new Rule($"[bold]{Markup.Escape(tool.Name)}[/] [grey]· {Markup.Escape(project.Name)}[/]").LeftJustified());
+        _console.WriteLine();
+
+        using var cancellation = new CancellationTokenSource();
+        ConsoleCancelEventHandler onCancel = (_, e) =>
+        {
+            e.Cancel = true;
+            cancellation.Cancel();
+        };
+        Console.CancelKeyPress += onCancel;
+
+        try
+        {
+            await tool.RunAsync(project, cancellation.Token);
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            _console.MarkupLine("[yellow]Cancelado.[/]");
+        }
+        catch (Exception ex)
+        {
+            _console.WriteException(ex, ExceptionFormats.ShortenEverything);
+        }
+        finally
+        {
+            Console.CancelKeyPress -= onCancel;
+        }
+
+        _console.WriteLine();
+        _console.Prompt(new TextPrompt<string>("[grey]Enter para volver al menú[/]").AllowEmpty());
     }
 
     private void ChangeProject()

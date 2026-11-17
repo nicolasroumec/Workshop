@@ -10,8 +10,9 @@ builder.Logging.ClearProviders();
 
 builder.Services
     .AddConsoleUi()
-    .AddProjects();
+    .AddProjects()
+    .AddTools();
 
 using var host = builder.Build();
 
-host.Services.GetRequiredService<MainMenu>().Run();
+await host.Services.GetRequiredService<MainMenu>().RunAsync();
