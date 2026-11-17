@@ -1,1 +1,3 @@
-Console.WriteLine("Workshop");
+using Workshop.Menu;
+
+new MainMenu().Run();
