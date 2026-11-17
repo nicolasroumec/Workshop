@@ -75,9 +75,15 @@ internal class MainMenu
 
     private void AddProject()
     {
-        var path = AnsiConsole.Prompt(new TextPrompt<string>("Ruta de la carpeta:")
-            .Validate(p => Directory.Exists(p.Trim('"')), "Esa carpeta no existe."))
-            .Trim('"');
+        var path = AnsiConsole.Prompt(new TextPrompt<string>("Ruta de la carpeta [grey](vacío para volver)[/]:")
+            .AllowEmpty()
+            .Validate(p => p.Length == 0 || Directory.Exists(p.Trim('"')), "Esa carpeta no existe."))
+            .Trim().Trim('"');
+
+        if (path.Length == 0)
+        {
+            return;
+        }
 
         var fullPath = Path.GetFullPath(path);
 
