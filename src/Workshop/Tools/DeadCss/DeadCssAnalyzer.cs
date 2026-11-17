@@ -16,24 +16,32 @@ internal static partial class DeadCssAnalyzer
         "show", "showing", "hiding", "fade", "collapsing", "modal-open", "modal-backdrop", "was-validated"
     ];
 
-    public static async Task<IReadOnlyList<CssFileResult>> AnalyzeAsync(string rootPath, CancellationToken cancellationToken)
+    public static async Task<IReadOnlyList<CssFileResult>> AnalyzeAsync(
+        string rootPath, Action<int, int>? onFileRead, CancellationToken cancellationToken)
     {
         var files = EnumerateFiles(rootPath)
             .Where(f => !f.Contains(".min.", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
+        var usageFiles = files.Where(f => UsageExtensions.Contains(Path.GetExtension(f))).ToList();
+        var cssFiles = files.Where(IsGlobalCss).Order(StringComparer.OrdinalIgnoreCase).ToList();
+        var total = usageFiles.Count + cssFiles.Count;
+        var done = 0;
+
         var sources = new List<string>();
-        foreach (var file in files.Where(f => UsageExtensions.Contains(Path.GetExtension(f))))
+        foreach (var file in usageFiles)
         {
             sources.Add(await File.ReadAllTextAsync(file, cancellationToken));
+            onFileRead?.Invoke(++done, total);
         }
 
         var index = CssUsageIndex.Build(sources, RuntimeClasses);
 
         var results = new List<CssFileResult>();
-        foreach (var cssFile in files.Where(IsGlobalCss).Order(StringComparer.OrdinalIgnoreCase))
+        foreach (var cssFile in cssFiles)
         {
             var classes = ExtractClasses(await File.ReadAllTextAsync(cssFile, cancellationToken));
+            onFileRead?.Invoke(++done, total);
             if (classes.Count > 0)
             {
                 results.Add(Classify(Path.GetRelativePath(rootPath, cssFile), classes, index));

@@ -11,6 +11,10 @@ internal class DuplicateCodeTool(IAnsiConsole console, ProjectStore store) : ITo
 
     public string Name => "Código duplicado";
 
+    public string Icon => "📋";
+
+    public string Description => "Bloques repetidos detectados con jscpd";
+
     public async Task RunAsync(Project project, CancellationToken cancellationToken)
     {
         var minTokens = console.Prompt(new TextPrompt<int>("Tamaño mínimo del bloque (tokens):")
@@ -30,7 +34,7 @@ internal class DuplicateCodeTool(IAnsiConsole console, ProjectStore store) : ITo
         var reportPath = Path.Combine(outputFolder, "jscpd-report.json");
         if (result.ExitCode != 0 || !File.Exists(reportPath))
         {
-            console.MarkupLine("[red]jscpd no generó el reporte.[/] ¿Está instalado Node.js?");
+            console.MarkupLine($"[{Theme.Danger}]jscpd no generó el reporte.[/] ¿Está instalado Node.js?");
             console.WriteLine(string.IsNullOrWhiteSpace(result.Error) ? result.Output : result.Error);
             return;
         }
@@ -38,7 +42,7 @@ internal class DuplicateCodeTool(IAnsiConsole console, ProjectStore store) : ITo
         var report = JscpdReport.Parse(await File.ReadAllTextAsync(reportPath, cancellationToken));
 
         ShowSummary(report.Statistics.Total);
-        ShowTopDuplicates(report.Duplicates);
+        ShowTopDuplicates(project, report.Duplicates);
         OfferHtmlReport(outputFolder);
     }
 
@@ -52,11 +56,11 @@ internal class DuplicateCodeTool(IAnsiConsole console, ProjectStore store) : ITo
         console.WriteLine();
     }
 
-    private void ShowTopDuplicates(IReadOnlyList<JscpdReport.Duplicate> duplicates)
+    private void ShowTopDuplicates(Project project, IReadOnlyList<JscpdReport.Duplicate> duplicates)
     {
         if (duplicates.Count == 0)
         {
-            console.MarkupLine("[green]No hay código duplicado.[/]");
+            console.MarkupLine($"[{Theme.Success}]No hay código duplicado.[/]");
             return;
         }
 
@@ -69,8 +73,8 @@ internal class DuplicateCodeTool(IAnsiConsole console, ProjectStore store) : ITo
             table.AddRow(
                 duplicate.Lines.ToString(CultureInfo.CurrentCulture),
                 duplicate.Format,
-                FormatLocation(duplicate.FirstFile),
-                FormatLocation(duplicate.SecondFile));
+                FormatLocation(project, duplicate.FirstFile),
+                FormatLocation(project, duplicate.SecondFile));
         }
 
         console.Write(table);
@@ -85,8 +89,8 @@ internal class DuplicateCodeTool(IAnsiConsole console, ProjectStore store) : ITo
         }
     }
 
-    private static string FormatLocation(JscpdReport.Location location) =>
-        $"{Markup.Escape(location.Name)} [grey]{location.Start}-{location.End}[/]";
+    private static string FormatLocation(Project project, JscpdReport.Location location) =>
+        $"{Theme.FileLink(Path.Combine(project.Path, location.Name), location.Name)} [{Theme.Muted}]{location.Start}-{location.End}[/]";
 
     private static string SafeFolderName(string name) =>
         string.Join('_', name.Split(Path.GetInvalidFileNameChars()));
