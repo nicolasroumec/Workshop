@@ -1,3 +1,4 @@
+using System.Reflection;
 using Spectre.Console;
 using Workshop.Projects;
 using Workshop.Tools;
@@ -9,6 +10,12 @@ internal class MainMenu
     private const string ChangeProjectOption = "Cambiar proyecto";
     private const string AddProjectOption = "Agregar proyecto";
     private const string ExitOption = "Salir";
+
+    private static readonly string Version =
+        typeof(MainMenu).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion.Split('+')[0]
+        ?? "?";
 
     private readonly IAnsiConsole _console;
     private readonly ProjectStore _store;
@@ -54,7 +61,7 @@ internal class MainMenu
     private void ShowHeader()
     {
         _console.Clear();
-        _console.Write(new Rule("[bold]Workshop[/]").LeftJustified());
+        _console.Write(new Rule($"[bold]Workshop[/] [grey]v{Version}[/]").LeftJustified());
         _console.MarkupLine(_current is null
             ? "[yellow]Sin proyecto. Agregá uno para empezar.[/]"
             : $"Proyecto: [bold]{Markup.Escape(_current.Name)}[/]  [grey]{Markup.Escape(_current.Path)}[/]");
