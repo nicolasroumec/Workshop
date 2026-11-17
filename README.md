@@ -34,7 +34,7 @@ Los tests corren sobre [Microsoft.Testing.Platform](https://aka.ms/mtp-overview)
 
 ## Cómo agregar una herramienta
 
-Creá una clase en `src/Workshop/Tools/` que implemente `ITool`. Se registra sola al arrancar y aparece en el menú. Puede pedir dependencias como `IAnsiConsole` o `ProjectStore` por constructor.
+Creá una clase en `src/Workshop/Tools/` que implemente `ITool` (`Name`, `Icon`, `Description` y `RunAsync`). Se registra sola al arrancar y aparece en el menú. Puede pedir dependencias como `IAnsiConsole` o `ProjectStore` por constructor.
 
 ## Datos
 

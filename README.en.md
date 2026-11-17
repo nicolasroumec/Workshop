@@ -36,7 +36,7 @@ Tests run on [Microsoft.Testing.Platform](https://aka.ms/mtp-overview) (xUnit v3
 
 ## Add a tool
 
-Create a class in `src/Workshop/Tools/` that implements `ITool`. It is registered automatically at startup and shows up in the menu; dependencies such as `IAnsiConsole` or `ProjectStore` can be requested through the constructor.
+Create a class in `src/Workshop/Tools/` that implements `ITool` (`Name`, `Icon`, `Description` and `RunAsync`). It is registered automatically at startup and shows up in the menu; dependencies such as `IAnsiConsole` or `ProjectStore` can be requested through the constructor.
 
 ## Data
 
