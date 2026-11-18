@@ -1,5 +1,6 @@
 using System.Reflection;
 using Spectre.Console;
+using Workshop.Install;
 using Workshop.Projects;
 using Workshop.Tools;
 
@@ -9,14 +10,17 @@ internal class MainMenu
 {
     private const string ChangeProjectOption = "Cambiar proyecto";
     private const string AddProjectOption = "Agregar proyecto";
+    private const string InstallOption = "Instalar en esta PC";
     private const string ExitOption = "Salir";
     private const string ToolsGroup = "Herramientas";
     private const string ProjectGroup = "Proyecto";
+    private const string WorkshopGroup = "Workshop";
 
     private static readonly Dictionary<string, string> OptionIcons = new()
     {
         [ChangeProjectOption] = "🔁",
         [AddProjectOption] = "➕",
+        [InstallOption] = "📥",
         [ExitOption] = "🚪",
     };
 
@@ -30,6 +34,8 @@ internal class MainMenu
     private readonly ProjectStore _store;
     private readonly List<ITool> _tools;
     private readonly List<Project> _projects;
+    private readonly string? _repository =
+        OperatingSystem.IsWindows() ? SelfInstaller.FindRepository(AppContext.BaseDirectory) : null;
     private Project? _current;
 
     public MainMenu(IAnsiConsole console, ProjectStore store, IEnumerable<ITool> tools)
@@ -55,6 +61,10 @@ internal class MainMenu
 
                 case AddProjectOption:
                     AddProject();
+                    break;
+
+                case InstallOption:
+                    await RunScreenAsync($"{OptionIcons[InstallOption]} [bold]{InstallOption}[/]", InstallAsync);
                     break;
 
                 case ExitOption:
@@ -127,6 +137,12 @@ internal class MainMenu
         projectOptions.Add(AddProjectOption);
 
         prompt.AddChoiceGroup(ProjectGroup, projectOptions);
+
+        if (_repository is not null)
+        {
+            prompt.AddChoiceGroup(WorkshopGroup, InstallOption);
+        }
+
         prompt.AddChoices(ExitOption);
 
         return _console.Prompt(prompt);
@@ -145,10 +161,45 @@ internal class MainMenu
             : $"[bold]{Markup.Escape(option)}[/]";
     }
 
-    private async Task RunToolAsync(ITool tool, Project project)
+    private Task RunToolAsync(ITool tool, Project project) =>
+        RunScreenAsync(
+            $"{tool.Icon} [bold]{Markup.Escape(tool.Name)}[/] [{Theme.Muted}]· {Markup.Escape(project.Name)}[/]",
+            cancellationToken => tool.RunAsync(project, cancellationToken));
+
+    private async Task InstallAsync(CancellationToken cancellationToken)
+    {
+        var repository = _repository;
+        if (!OperatingSystem.IsWindows() || repository is null)
+        {
+            return;
+        }
+
+        var folder = SelfInstaller.InstallFolder;
+        if (!_console.Confirm($"¿Instalar Workshop v{Version} en [bold]{Markup.Escape(folder)}[/]?"))
+        {
+            return;
+        }
+
+        _console.MarkupLine($"[{Theme.Muted}]Compilando e instalando...[/]");
+        var error = await SelfInstaller.PublishAsync(repository, folder, cancellationToken);
+        if (error is not null)
+        {
+            _console.MarkupLine($"[{Theme.Danger}]No se pudo instalar.[/] Si [bold]workshop[/] está abierto en otra ventana, cerralo y reintentá.");
+            _console.WriteLine(error);
+            return;
+        }
+
+        var addedToPath = SelfInstaller.AddToUserPath(folder);
+        _console.MarkupLine($"[{Theme.Success}]✔ Workshop instalado.[/]");
+        _console.MarkupLine(addedToPath
+            ? "Abrí una terminal nueva y escribí [bold]workshop[/]."
+            : "Ya podés abrirlo escribiendo [bold]workshop[/].");
+    }
+
+    private async Task RunScreenAsync(string title, Func<CancellationToken, Task> action)
     {
         _console.Clear();
-        _console.Write(new Rule($"{tool.Icon} [bold]{Markup.Escape(tool.Name)}[/] [{Theme.Muted}]· {Markup.Escape(project.Name)}[/]").LeftJustified());
+        _console.Write(new Rule(title).LeftJustified());
         _console.WriteLine();
 
         using var cancellation = new CancellationTokenSource();
@@ -161,7 +212,7 @@ internal class MainMenu
 
         try
         {
-            await tool.RunAsync(project, cancellation.Token);
+            await action(cancellation.Token);
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
