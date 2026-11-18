@@ -62,7 +62,7 @@ public class TagToolTests
         return repo;
     }
 
-    private sealed class ScriptedConsole : IAnsiConsole, IAnsiConsoleInput
+    internal sealed class ScriptedConsole : IAnsiConsole, IAnsiConsoleInput
     {
         private readonly Queue<ConsoleKeyInfo> _keys = new();
         private readonly StringWriter _output = new();

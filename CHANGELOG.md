@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+## [0.4.0] - 2026-11-18
+
+### Agregado
+
+- Herramienta **Conversor Clarion**: convierte fechas, horas y fecha con hora entre el formato Clarion y el legible, en ambos sentidos.
+
 ## [0.3.0] - 2026-11-18
 
 ### Agregado
@@ -48,7 +54,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - Proyecto de tests con xUnit v3 sobre Microsoft.Testing.Platform.
 - README en español e inglés.
 
-[Sin publicar]: https://github.com/nicolasroumec/Workshop/compare/v0.3.0...HEAD
+[Sin publicar]: https://github.com/nicolasroumec/Workshop/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/nicolasroumec/Workshop/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/nicolasroumec/Workshop/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/nicolasroumec/Workshop/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/nicolasroumec/Workshop/releases/tag/v0.1.0

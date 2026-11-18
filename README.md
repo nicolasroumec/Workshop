@@ -25,6 +25,7 @@ La primera vez, elegí **Agregar proyecto** y pegá la carpeta del proyecto a an
 | **CSS muerto** | Lista las clases definidas en los CSS globales (no en los `.razor.css`) que no se usan en ningún `.razor`, `.cs`, `.cshtml`, `.html`, `.js` ni `.ts`. Las clases que se arman por interpolación (`badge-{codigo}`) se marcan para revisar a mano en lugar de darse por muertas. |
 | **Código duplicado** | Ejecuta [jscpd](https://github.com/kucherenko/jscpd) sobre archivos C#, Razor y CSS, muestra los bloques duplicados más grandes y abre el reporte HTML completo. |
 | **Crear tag** | Muestra los commits desde el último tag `vX.Y.Z`, propone la versión siguiente y publica un tag anotado en `origin`. Solo funciona sin cambios pendientes y parado en el último commit de la rama principal. |
+| **Conversor Clarion** | Convierte fechas (`82455` ↔ `29/09/2026`), horas (`4599263` ↔ `12:46:32.62`) y fecha con hora entre el formato Clarion y el legible. Detecta el sentido según lo que escribas. |
 
 ## Versión
 
