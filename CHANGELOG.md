@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+## [0.5.0] - 2026-11-18
+
+### Agregado
+
+- Opción **Instalar en esta PC** en el menú: compila Workshop, lo instala en `%LOCALAPPDATA%\Programs\Workshop` y lo agrega al PATH para abrirlo con `workshop`. Solo aparece al correr desde el repositorio y también sirve para actualizar.
+
 ## [0.4.0] - 2026-11-18
 
 ### Agregado
@@ -54,7 +60,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - Proyecto de tests con xUnit v3 sobre Microsoft.Testing.Platform.
 - README en español e inglés.
 
-[Sin publicar]: https://github.com/nicolasroumec/Workshop/compare/v0.4.0...HEAD
+[Sin publicar]: https://github.com/nicolasroumec/Workshop/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/nicolasroumec/Workshop/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/nicolasroumec/Workshop/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/nicolasroumec/Workshop/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/nicolasroumec/Workshop/compare/v0.1.0...v0.2.0
