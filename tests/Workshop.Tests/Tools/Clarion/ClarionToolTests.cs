@@ -10,7 +10,8 @@ public class ClarionToolTests
     public async Task Run_ConvertsUntilEmptyInput()
     {
         var console = new ScriptedConsole();
-        console.Type("81453").Press(ConsoleKey.Enter)
+        console.Press(ConsoleKey.Enter)
+            .Type("81453").Press(ConsoleKey.Enter)
             .Type("2/1/2024").Press(ConsoleKey.Enter)
             .Type("abc").Press(ConsoleKey.Enter)
             .Press(ConsoleKey.Enter);
@@ -20,5 +21,33 @@ public class ClarionToolTests
         Assert.Contains("01/01/2024", console.Output);
         Assert.Contains("81454", console.Output);
         Assert.Contains("Valor no válido", console.Output);
+    }
+
+    [Fact]
+    public async Task Run_TimeMode_ConvertsTimes()
+    {
+        var console = new ScriptedConsole();
+        console.Press(ConsoleKey.DownArrow).Press(ConsoleKey.Enter)
+            .Type("5964001").Press(ConsoleKey.Enter)
+            .Type("1:02:03.04").Press(ConsoleKey.Enter)
+            .Press(ConsoleKey.Enter);
+
+        await new ClarionTool(console).RunAsync(new Project("test", "."), TestContext.Current.CancellationToken);
+
+        Assert.Contains("16:34:00.00", console.Output);
+        Assert.Contains("372305", console.Output);
+    }
+
+    [Fact]
+    public async Task Run_DateTimeMode_ConvertsBothParts()
+    {
+        var console = new ScriptedConsole();
+        console.Press(ConsoleKey.DownArrow).Press(ConsoleKey.DownArrow).Press(ConsoleKey.Enter)
+            .Type("81453 1").Press(ConsoleKey.Enter)
+            .Press(ConsoleKey.Enter);
+
+        await new ClarionTool(console).RunAsync(new Project("test", "."), TestContext.Current.CancellationToken);
+
+        Assert.Contains("01/01/2024 00:00:00.00", console.Output);
     }
 }
