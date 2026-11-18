@@ -144,7 +144,27 @@ public class GitTagsTests
         Assert.Empty(tags.Lines);
     }
 
-    private sealed class TempRepo : IDisposable
+    [Theory]
+    [InlineData("https://github.com/owner/repo.git")]
+    [InlineData("https://github.com/owner/repo")]
+    [InlineData("https://user:secret@github.com/owner/repo.git")]
+    [InlineData("git@github.com:owner/repo.git")]
+    [InlineData("ssh://git@github.com/owner/repo.git")]
+    public void TagUrl_GitHubRemote_BuildsLinkWithoutCredentials(string remote)
+    {
+        Assert.Equal("https://github.com/owner/repo/releases/tag/v1.0.0", GitTags.TagUrl(remote, "v1.0.0"));
+    }
+
+    [Theory]
+    [InlineData("https://gitlab.com/owner/repo.git")]
+    [InlineData("https://github.com.evil.test/owner/repo.git")]
+    [InlineData(@"C:\repos\remote.git")]
+    public void TagUrl_OtherRemote_ReturnsNull(string remote)
+    {
+        Assert.Null(GitTags.TagUrl(remote, "v1.0.0"));
+    }
+
+    internal sealed class TempRepo : IDisposable
     {
         private readonly string _root = Path.Combine(Path.GetTempPath(), "workshop-tests-" + Guid.NewGuid().ToString("N"));
         private int _commits;

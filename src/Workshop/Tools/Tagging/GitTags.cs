@@ -1,10 +1,11 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Workshop.Tools.Tagging;
 
-internal static class GitTags
+internal static partial class GitTags
 {
     private const string HeadRefPrefix = "ref: refs/heads/";
     private const string HeadRefSuffix = "\tHEAD";
@@ -114,6 +115,12 @@ internal static class GitTags
             .Select(line => line[HeadRefPrefix.Length..^HeadRefSuffix.Length])
             .FirstOrDefault();
 
+    public static string? TagUrl(string remoteUrl, string tag)
+    {
+        var match = GitHubRemoteRegex().Match(remoteUrl);
+        return match.Success ? $"https://github.com/{match.Groups[1].Value}/releases/tag/{tag}" : null;
+    }
+
     public static async Task<GitResult> RunAsync(string path, CancellationToken cancellationToken, params string[] arguments)
     {
         var startInfo = new ProcessStartInfo("git", ["-C", path, .. arguments])
@@ -155,4 +162,7 @@ internal static class GitTags
 
     private static (TagPlan? Plan, string? Problem) Problem(string message, GitResult result) =>
         (null, $"{message} {result.Error.Trim()}".TrimEnd());
+
+    [GeneratedRegex(@"\A(?:https://(?:[^@/]+@)?github\.com/|ssh://git@github\.com/|git@github\.com:)([\w.-]+/[\w.-]+?)(?:\.git)?/?\z")]
+    private static partial Regex GitHubRemoteRegex();
 }
