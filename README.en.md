@@ -2,12 +2,13 @@
 
 [Español](README.md) · **English**
 
-Personal console toolbox for day-to-day development: pick a project folder and run analysis tools on it.
+Personal console toolbox for day-to-day development: pick a project folder and run tools on it.
 
 ## Requirements
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - [Node.js](https://nodejs.org) (only for the duplicate code tool, which runs `jscpd` through `npx`)
+- [Git](https://git-scm.com) (to show the project branch, create tags and compute the version at build time)
 
 ## Run
 
@@ -23,8 +24,13 @@ The first time, choose **Agregar proyecto** (add project) and paste the folder o
 |---|---|
 | **CSS muerto** (dead CSS) | Lists classes defined in global CSS files (not `.razor.css`) that are never used in `.razor`, `.cs`, `.cshtml`, `.html`, `.js` or `.ts` files. Classes built by interpolation (`badge-{code}`) are flagged for manual review instead of reported as dead. |
 | **Código duplicado** (duplicate code) | Runs [jscpd](https://github.com/kucherenko/jscpd) on C#, Razor and CSS files, shows the largest duplicated blocks and opens the full HTML report. |
+| **Crear tag** (create tag) | Shows the commits since the latest `vX.Y.Z` tag, suggests the next version and publishes an annotated tag to `origin`. It only works with no pending changes and on the latest commit of the default branch. |
 
 The user interface is in Spanish; the code is in English.
+
+## Version
+
+The version comes from the latest git tag through [MinVer](https://github.com/adamralph/minver), so no file is edited. Build after creating the tag and from a clone with full history.
 
 ## Test
 
