@@ -18,6 +18,10 @@ dotnet run --project src/Workshop
 
 La primera vez, elegí **Agregar proyecto** y pegá la carpeta del proyecto a analizar. La app recuerda el último proyecto usado.
 
+## Instalación
+
+Corriendo desde el repositorio en Windows, elegí **Instalar en esta PC**. Workshop queda en `%LOCALAPPDATA%\Programs\Workshop` y se abre escribiendo `workshop` en una terminal nueva. Para actualizarlo, hacé `git pull`, corré la app desde el repositorio y elegí la opción de nuevo, con `workshop` cerrado.
+
 ## Herramientas
 
 | Herramienta | Qué hace |
