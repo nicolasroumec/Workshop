@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+## [0.3.0] - 2026-11-18
+
+### Agregado
+
+- Herramienta **Crear tag**: muestra los commits desde el último tag, propone la versión siguiente (patch, minor o major), pide un mensaje y publica el tag en GitHub. Frena si hay cambios sin commitear, si el commit actual no es el último de la rama principal o si no hay commits nuevos.
+
+### Cambiado
+
+- La versión sale del último tag de git con MinVer, ya no se edita en el `.csproj`.
+
 ## [0.2.0] - 2026-11-17
 
 ### Agregado
@@ -38,6 +48,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - Proyecto de tests con xUnit v3 sobre Microsoft.Testing.Platform.
 - README en español e inglés.
 
-[Sin publicar]: https://github.com/nicolasroumec/Workshop/compare/v0.2.0...HEAD
+[Sin publicar]: https://github.com/nicolasroumec/Workshop/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/nicolasroumec/Workshop/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/nicolasroumec/Workshop/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/nicolasroumec/Workshop/releases/tag/v0.1.0
