@@ -25,6 +25,7 @@ The first time, choose **Agregar proyecto** (add project) and paste the folder o
 | **CSS muerto** (dead CSS) | Lists classes defined in global CSS files (not `.razor.css`) that are never used in `.razor`, `.cs`, `.cshtml`, `.html`, `.js` or `.ts` files. Classes built by interpolation (`badge-{code}`) are flagged for manual review instead of reported as dead. |
 | **Código duplicado** (duplicate code) | Runs [jscpd](https://github.com/kucherenko/jscpd) on C#, Razor and CSS files, shows the largest duplicated blocks and opens the full HTML report. |
 | **Crear tag** (create tag) | Shows the commits since the latest `vX.Y.Z` tag, suggests the next version and publishes an annotated tag to `origin`. It only works with no pending changes and on the latest commit of the default branch. |
+| **Conversor Clarion** (Clarion converter) | Converts dates (`82455` ↔ `29/09/2026`), times (`4599263` ↔ `12:46:32.62`) and date-times between Clarion and readable formats. The direction is detected from what you type. |
 
 The user interface is in Spanish; the code is in English.
 
