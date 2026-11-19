@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+## [0.6.0] - 2026-11-19
+
+### Agregado
+
+- **Auditoría CSS** revisa también las variables CSS: las que se usan con `var(--x)` sin declararse en ningún lado (separadas en sin respaldo y con respaldo) y las que se declaran y nadie usa, con archivo y número de línea. Busca en todos los `.css`, incluidos los `.razor.css`, y en los estilos inline de `.razor`, `.cs`, `.cshtml`, `.html`, `.js` y `.ts`. Las variables de Bootstrap (`--bs-*`) cuentan como declaradas.
+
+### Cambiado
+
+- La herramienta **CSS muerto** pasa a llamarse **Auditoría CSS**.
+
 ## [0.5.0] - 2026-11-18
 
 ### Agregado
@@ -60,7 +70,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - Proyecto de tests con xUnit v3 sobre Microsoft.Testing.Platform.
 - README en español e inglés.
 
-[Sin publicar]: https://github.com/nicolasroumec/Workshop/compare/v0.5.0...HEAD
+[Sin publicar]: https://github.com/nicolasroumec/Workshop/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/nicolasroumec/Workshop/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/nicolasroumec/Workshop/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/nicolasroumec/Workshop/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/nicolasroumec/Workshop/compare/v0.2.0...v0.3.0

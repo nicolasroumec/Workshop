@@ -5,15 +5,15 @@ namespace Workshop.Tools.DeadCss;
 
 internal class DeadCssTool(IAnsiConsole console) : ITool
 {
-    public string Name => "CSS muerto";
+    public string Name => "Auditoría CSS";
 
-    public string Icon => "🧹";
+    public string Icon => "🔍";
 
-    public string Description => "Clases de los CSS globales que nadie usa";
+    public string Description => "Clases y variables CSS que sobran o faltan";
 
     public async Task RunAsync(Project project, CancellationToken cancellationToken)
     {
-        var results = await console.Progress()
+        var audit = await console.Progress()
             .Columns(
                 new TaskDescriptionColumn(),
                 new ProgressBarColumn { CompletedStyle = Style.Parse(Theme.Accent) },
@@ -31,14 +31,71 @@ internal class DeadCssTool(IAnsiConsole console) : ITool
 
         console.WriteLine();
 
-        if (results.Count == 0)
+        if (audit.Files.Count == 0)
         {
             console.MarkupLine($"[{Theme.Warning}]No se encontraron archivos CSS globales.[/]");
+            console.WriteLine();
+        }
+        else
+        {
+            ShowTree(project, audit.Files);
+            ShowSummary(project, audit.Files);
+            console.WriteLine();
+        }
+
+        ShowVariables(project, audit.Variables);
+    }
+
+    private void ShowVariables(Project project, CssVariableReport report)
+    {
+        console.Write(new Rule("[bold]Variables[/]").LeftJustified());
+        console.WriteLine();
+
+        if (report.Undeclared.Count + report.UndeclaredWithFallback.Count + report.Unused.Count == 0)
+        {
+            console.MarkupLine($"[{Theme.Success}]No hay variables inventadas ni sin uso.[/]");
             return;
         }
 
-        ShowTree(project, results);
-        ShowSummary(project, results);
+        console.MarkupLine(
+            $"{Highlight(report.Undeclared.Count, Theme.Danger)} inventadas · " +
+            $"{Highlight(report.UndeclaredWithFallback.Count, Theme.Warning)} con respaldo · " +
+            $"{Highlight(report.Unused.Count, Theme.Warning)} sin uso");
+        console.WriteLine();
+
+        ShowVariableGroup(project, "Inventadas", "Usos", Theme.Danger, report.Undeclared);
+        ShowVariableGroup(project, "Con respaldo", "Usos", Theme.Warning, report.UndeclaredWithFallback);
+        ShowVariableGroup(project, "Sin uso", "Declaraciones", Theme.Warning, report.Unused);
+    }
+
+    private void ShowVariableGroup(Project project, string title, string countHeader, string color, IReadOnlyList<CssVariableIssue> issues)
+    {
+        if (issues.Count == 0)
+        {
+            return;
+        }
+
+        console.MarkupLine($"[bold {color}]{title}[/]");
+
+        var table = new Table()
+            .AddColumn("Variable")
+            .AddColumn(new TableColumn(countHeader).RightAligned())
+            .AddColumn("Dónde");
+
+        foreach (var issue in issues)
+        {
+            var first = issue.Locations[0];
+            var where = Theme.FileLink(Path.Combine(project.Path, first.RelativePath), $"{first.RelativePath}:{first.Line}");
+            if (issue.Locations.Count > 1)
+            {
+                where += $" [{Theme.Muted}](+{issue.Locations.Count - 1})[/]";
+            }
+
+            table.AddRow(Markup.Escape(issue.Name), issue.Locations.Count.ToString(), where);
+        }
+
+        console.Write(table);
+        console.WriteLine();
     }
 
     private void ShowTree(Project project, IReadOnlyList<CssFileResult> results)
