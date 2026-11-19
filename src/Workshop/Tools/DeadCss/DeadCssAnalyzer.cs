@@ -2,6 +2,8 @@ using System.Text.RegularExpressions;
 
 namespace Workshop.Tools.DeadCss;
 
+internal record CssAuditResult(IReadOnlyList<CssFileResult> Files, CssVariableReport Variables);
+
 internal static partial class DeadCssAnalyzer
 {
     private static readonly HashSet<string> ExcludedFolders =
@@ -16,7 +18,7 @@ internal static partial class DeadCssAnalyzer
         "show", "showing", "hiding", "fade", "collapsing", "modal-open", "modal-backdrop", "was-validated"
     ];
 
-    public static async Task<IReadOnlyList<CssFileResult>> AnalyzeAsync(
+    public static async Task<CssAuditResult> AnalyzeAsync(
         string rootPath, Action<int, int>? onFileRead, CancellationToken cancellationToken)
     {
         var files = EnumerateFiles(rootPath)
@@ -24,14 +26,20 @@ internal static partial class DeadCssAnalyzer
             .ToList();
 
         var usageFiles = files.Where(f => UsageExtensions.Contains(Path.GetExtension(f))).ToList();
-        var cssFiles = files.Where(IsGlobalCss).Order(StringComparer.OrdinalIgnoreCase).ToList();
+        var cssFiles = files
+            .Where(f => f.EndsWith(".css", StringComparison.OrdinalIgnoreCase))
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToList();
         var total = usageFiles.Count + cssFiles.Count;
         var done = 0;
 
+        var variables = new CssVariableScanner();
         var sources = new List<string>();
         foreach (var file in usageFiles)
         {
-            sources.Add(await File.ReadAllTextAsync(file, cancellationToken));
+            var text = await File.ReadAllTextAsync(file, cancellationToken);
+            sources.Add(text);
+            variables.Scan(Path.GetRelativePath(rootPath, file), text);
             onFileRead?.Invoke(++done, total);
         }
 
@@ -40,15 +48,24 @@ internal static partial class DeadCssAnalyzer
         var results = new List<CssFileResult>();
         foreach (var cssFile in cssFiles)
         {
-            var classes = ExtractClasses(await File.ReadAllTextAsync(cssFile, cancellationToken));
+            var text = await File.ReadAllTextAsync(cssFile, cancellationToken);
+            var relativePath = Path.GetRelativePath(rootPath, cssFile);
+            variables.Scan(relativePath, text);
             onFileRead?.Invoke(++done, total);
+
+            if (!IsGlobalCss(cssFile))
+            {
+                continue;
+            }
+
+            var classes = ExtractClasses(text);
             if (classes.Count > 0)
             {
-                results.Add(Classify(Path.GetRelativePath(rootPath, cssFile), classes, index));
+                results.Add(Classify(relativePath, classes, index));
             }
         }
 
-        return results;
+        return new CssAuditResult(results, variables.Report());
     }
 
     public static IReadOnlyList<string> ExtractClasses(string css)
