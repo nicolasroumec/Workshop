@@ -26,7 +26,7 @@ When running from the repository on Windows, choose **Instalar en esta PC** (ins
 
 | Tool | What it does |
 |---|---|
-| **CSS muerto** (dead CSS) | Lists classes defined in global CSS files (not `.razor.css`) that are never used in `.razor`, `.cs`, `.cshtml`, `.html`, `.js` or `.ts` files. Classes built by interpolation (`badge-{code}`) are flagged for manual review instead of reported as dead. |
+| **Auditoría CSS** (CSS audit) | Lists classes defined in global CSS files (not `.razor.css`) that are never used in `.razor`, `.cs`, `.cshtml`, `.html`, `.js` or `.ts` files. Classes built by interpolation (`badge-{code}`) are flagged for manual review instead of reported as dead. It also checks CSS variables across all `.css` files (including `.razor.css`) and inline styles: those used with `var(--x)` but never declared (split by whether they have a fallback value) and those declared but never used. Bootstrap variables (`--bs-*`) count as declared. |
 | **Código duplicado** (duplicate code) | Runs [jscpd](https://github.com/kucherenko/jscpd) on C#, Razor and CSS files, shows the largest duplicated blocks and opens the full HTML report. |
 | **Crear tag** (create tag) | Shows the commits since the latest `vX.Y.Z` tag, suggests the next version and publishes an annotated tag to `origin`. It only works with no pending changes and on the latest commit of the default branch. |
 | **Conversor Clarion** (Clarion converter) | Converts dates (`82455` ↔ `29/09/2026`), times (`4599263` ↔ `12:46:32.62`) and date-times between Clarion and readable formats. The direction is detected from what you type. |
